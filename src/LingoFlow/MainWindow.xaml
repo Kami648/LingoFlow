@@ -1,0 +1,166 @@
+<Window x:Class="LingoFlow.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Style="{StaticResource {x:Type Window}}" Title="译流 LingoFlow" Width="1210" Height="850" MinWidth="1050" MinHeight="720" WindowStartupLocation="CenterScreen">
+ <Grid Background="{DynamicResource Bg}">
+  <Grid.ColumnDefinitions><ColumnDefinition Width="208"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+  <Border Background="{DynamicResource Sidebar}" BorderBrush="{DynamicResource Border}" BorderThickness="0,0,1,0">
+   <DockPanel Margin="20,28,18,20">
+    <StackPanel DockPanel.Dock="Top" Margin="0,0,0,36">
+     <StackPanel Orientation="Horizontal"><Image Source="Assets/lingoflow-v2.png" Width="42" Height="42" Margin="0,0,11,0"/><StackPanel><TextBlock Text="译流" FontSize="23" FontWeight="Bold"/><TextBlock Text="LINGOFLOW" Foreground="{DynamicResource Accent}" FontSize="9" FontWeight="SemiBold"/></StackPanel></StackPanel>
+     <TextBlock Text="让声音，跨越语言。" Style="{StaticResource Label}" Margin="0,17,0,0"/>
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Bottom"><Border CornerRadius="10" Background="{DynamicResource Inset}" Padding="13"><StackPanel><TextBlock Text="你的声音，由你掌控" FontSize="12"/><TextBlock Text="本地识别 · 本地 / 云端翻译" Foreground="{DynamicResource Muted}" FontSize="11" Margin="0,6,0,0"/></StackPanel></Border><TextBlock Text="LingoFlow  /  0.2.4" Style="{StaticResource Label}" Margin="4,18,0,0"/></StackPanel>
+    <StackPanel>
+     <Button x:Name="LiveNav" Click="LiveNav_Click" Content="◉    实时翻译" HorizontalContentAlignment="Left" Background="{DynamicResource Selected}" Margin="0,0,0,9"/>
+     <Button x:Name="ImportNav" Click="ImportNav_Click" Content="▤    文件翻译" Background="Transparent" Margin="0,0,0,9"/>
+     <Button x:Name="RefineNav" Click="RefineNav_Click" Content="✦    字幕精修" Background="Transparent" Margin="0,0,0,9"/>
+     <Button x:Name="ModelsNav" Click="ModelsNav_Click" Content="◇    设备与模型" Background="Transparent" Margin="0,0,0,9"/>
+     <Button x:Name="SettingsNav" Click="SettingsNav_Click" Content="⚙    接口与外观" Background="Transparent" Margin="0,0,0,9"/>
+     <TextBlock Text="悬浮字幕快捷键" Style="{StaticResource Label}" Margin="12,34,0,8"/>
+     <TextBlock x:Name="HotkeySidebar" Text="正在检查快捷键…" Foreground="{DynamicResource Muted}" FontSize="12" LineHeight="22" Margin="12,0,0,0"/>
+    </StackPanel>
+   </DockPanel>
+  </Border>
+  <Grid Grid.Column="1" Margin="30,26,30,18">
+   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <Grid Margin="0,0,0,22"><StackPanel><TextBlock x:Name="PageTitle" Text="实时翻译" FontSize="27" FontWeight="SemiBold"/><TextBlock x:Name="PageCaption" Text="捕获应用声音，让每一句话自然流动。" Foreground="{DynamicResource Muted}" Margin="0,8,0,0"/></StackPanel><Border HorizontalAlignment="Right" VerticalAlignment="Top" CornerRadius="14" Background="{DynamicResource Inset}" Padding="12,7"><TextBlock x:Name="StateBadge" Text="●  就绪" Foreground="{DynamicResource Accent}" FontSize="12"/></Border></Grid>
+
+   <Grid x:Name="LivePage" Grid.Row="1">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="18"/><ColumnDefinition Width="294"/></Grid.ColumnDefinitions>
+    <Grid>
+     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+     <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="01  选择声音来源" Style="{StaticResource Heading}"/><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><ComboBox x:Name="SourceBox" Margin="0,0,8,8"/><Button Grid.Column="1" Click="Refresh_Click" Content="刷新" Margin="0,0,0,8" Padding="13,7"/></Grid><TextBlock x:Name="CaptureHint" Text="仅捕获所选应用及其子进程；浏览器可能包含多个标签页。" Style="{StaticResource Label}"/></StackPanel></Border>
+     <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0" Padding="23,20">
+      <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+       <Grid><TextBlock Text="字幕流" Style="{StaticResource Heading}"/><StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><Button x:Name="RetryFailedButton" Content="重试失败片段" Click="RetryFailed_Click" IsEnabled="False" Padding="9,6" Margin="0,0,7,0" FontSize="11"/><Button Content="导出三份 SRT" Click="Export_Click" Padding="11,6" Margin="0" FontSize="11"/></StackPanel></Grid>
+       <Grid Grid.Row="1"><ListBox x:Name="History" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Foreground="{DynamicResource Text}" ItemsSource="{Binding Subtitles}" SelectionMode="Single"><ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Padding" Value="0"/><Setter Property="Margin" Value="0,0,0,18"/><Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem"><ContentPresenter/></ControlTemplate></Setter.Value></Setter></Style></ListBox.ItemContainerStyle><ListBox.ItemTemplate><DataTemplate><Border BorderBrush="{DynamicResource Border}" BorderThickness="0,0,0,1" Padding="0,8,0,18"><StackPanel><TextBlock Text="{Binding Original}" TextWrapping="Wrap" Foreground="{DynamicResource OriginalColor}" FontSize="13" Margin="0,0,0,8"/><TextBlock Text="{Binding Translation}" TextWrapping="Wrap" Foreground="{DynamicResource TranslationColor}" FontSize="20" LineHeight="30"/><TextBlock Text="{Binding Time, StringFormat=HH:mm:ss}" Foreground="{DynamicResource Muted}" FontSize="10" Margin="0,10,0,0"/></StackPanel></Border></DataTemplate></ListBox.ItemTemplate></ListBox>
+        <StackPanel x:Name="EmptyState" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20"><TextBlock Text="〰" FontSize="58" Foreground="{DynamicResource Accent}" HorizontalAlignment="Center"/><TextBlock Text="每一种语言，都值得被听懂" FontSize="19" Foreground="{DynamicResource Text}" HorizontalAlignment="Center" Margin="0,12,0,10"/><TextBlock Text="选择一个应用，开始你的第一段实时翻译。&#10;字幕将在这里出现，也可悬浮在其他窗口上。" Foreground="{DynamicResource Muted}" FontSize="12" TextAlignment="Center" LineHeight="22"/></StackPanel>
+       </Grid>
+       <TextBlock Grid.Row="2" x:Name="HistoryFootnote" Text="音频仅在内存中处理 · 字幕历史只保留在本次会话" Style="{StaticResource Label}" Margin="0,10,0,0"/>
+      </Grid>
+     </Border>
+    </Grid>
+    <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto"><StackPanel>
+     <Border Style="{StaticResource Card}"><StackPanel x:Name="SessionControls"><TextBlock Text="02  翻译设置" Style="{StaticResource Heading}"/><TextBlock Text="文字翻译方式" Style="{StaticResource Label}"/><ComboBox x:Name="RouteBox" SelectionChanged="Route_Changed"><ComboBoxItem Tag="hybrid" Content="云端翻译 · 语音本地识别"/><ComboBoxItem Tag="local" Content="本地翻译 · 全程离线"/></ComboBox><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="原语言" Style="{StaticResource Label}"/><ComboBox x:Name="SourceLanguageBox"/></StackPanel><StackPanel Grid.Column="2"><TextBlock Text="翻译为" Style="{StaticResource Label}"/><ComboBox x:Name="TargetLanguageBox"/></StackPanel></Grid><CheckBox x:Name="MixedBox" Content="识别多语夹杂（译文始终使用目标语言）" FontSize="12"/>
+      <TextBlock Text="处理模式" Style="{StaticResource Label}" Margin="0,13,0,8"/><StackPanel Orientation="Horizontal"><RadioButton x:Name="FastRadio" Content="快速" GroupName="Mode" Foreground="{DynamicResource Text}" Margin="0,0,22,0"/><RadioButton x:Name="AccurateRadio" Content="精准" GroupName="Mode" Foreground="{DynamicResource Text}"/></StackPanel><TextBlock Text="快速：较短句末等待，原文先显示。&#10;精准：等待明显停顿，跨切片合句翻译。" FontSize="11" Foreground="{DynamicResource Muted}" LineHeight="20" Margin="0,12,0,0"/>
+     </StackPanel></Border>
+     <Border Style="{StaticResource Card}"><StackPanel><Grid><TextBlock Text="声音活动" Style="{StaticResource Label}"/><TextBlock x:Name="LatencyText" Text="等待播放" HorizontalAlignment="Right" Foreground="{DynamicResource Accent}" FontSize="11"/></Grid><ProgressBar x:Name="AudioMeter" Minimum="0" Maximum="0.15" Height="5" Margin="0,13,0,16" Background="{DynamicResource Inset}" Foreground="{DynamicResource Accent}" BorderThickness="0"/><TextBlock x:Name="BacklogText" Text="没有待处理片段" TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource Accent}" LineHeight="19" Margin="0,0,0,12"/><TextBlock x:Name="EngineStatusText" Text="推理设备：启动后显示实际使用情况" TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource Accent}" LineHeight="19" Margin="0,0,0,12"/><TextBlock x:Name="PrivacyText" Text="混合模式仅向云端发送识别后的文字。" FontSize="12" Foreground="{DynamicResource Muted}" LineHeight="20"/></StackPanel></Border>
+     <Button Content="↗   显示 / 隐藏悬浮字幕" Click="Overlay_Click" Margin="0,0,0,12"/>
+     <Button Content="查看设备推荐方案" Click="ModelsNav_Click" Background="Transparent" Foreground="{DynamicResource Accent}" Margin="0,0,0,0"/>
+    </StackPanel></ScrollViewer>
+   </Grid>
+
+   <Grid x:Name="ImportPage" Grid.Row="1" Visibility="Collapsed">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+    <Border Style="{StaticResource Card}" Padding="22,18">
+     <StackPanel>
+      <TextBlock Text="导入音频 / 视频，生成完整字幕" Style="{StaticResource Heading}"/>
+      <Grid x:Name="FileInputControls"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+       <TextBox x:Name="FileInputBox" IsReadOnly="True" ToolTip="支持 MP4、MKV、MOV、WebM、MP3、M4A、WAV、FLAC 等常见文件" Margin="0,0,10,8"/>
+       <Button Grid.Column="1" Content="选择文件…" Click="ChooseMedia_Click" Margin="0,0,0,8"/>
+      </Grid>
+      <Grid x:Name="FileOptionsControls"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+       <StackPanel><TextBlock Text="文字翻译方式" Style="{StaticResource Label}"/><ComboBox x:Name="FileRouteBox"><ComboBoxItem Tag="local" Content="本地 · 全程离线"/><ComboBoxItem Tag="hybrid" Content="云端 · 仅发送文字"/></ComboBox></StackPanel>
+       <StackPanel Grid.Column="2"><TextBlock Text="原语言" Style="{StaticResource Label}"/><ComboBox x:Name="FileSourceBox"/></StackPanel>
+       <StackPanel Grid.Column="4"><TextBlock Text="翻译为" Style="{StaticResource Label}"/><ComboBox x:Name="FileTargetBox"/></StackPanel>
+       <StackPanel Grid.Column="6"><TextBlock Text="处理模式" Style="{StaticResource Label}"/><ComboBox x:Name="FileModeBox"><ComboBoxItem Tag="accurate" Content="精准 · 推荐"/><ComboBoxItem Tag="fast" Content="快速"/></ComboBox></StackPanel>
+      </Grid>
+      <Grid x:Name="FileOutputControls"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+       <TextBox x:Name="FileOutputBox" IsReadOnly="True" Margin="0,0,10,8"/>
+       <Button Grid.Column="1" Content="字幕保存到…" Click="ChooseFileOutput_Click" Margin="0,0,0,8"/>
+      </Grid>
+      <TextBlock Text="语音本地识别；采用设备页的模型与显卡设置。视频默认处理第一条音轨，不修改原文件。" Style="{StaticResource Label}" TextWrapping="Wrap" Margin="0,2,0,8"/>
+      <WrapPanel><Button x:Name="FileStartButton" Content="开始翻译并导出字幕" Click="TranslateFile_Click"/><Button x:Name="FileCancelButton" Content="取消处理" Click="CancelFile_Click" IsEnabled="False"/><Button x:Name="FileExportButton" Content="导出已完成字幕" Click="ExportFile_Click" IsEnabled="False"/><Button Content="打开保存目录" Click="OpenFileOutput_Click"/></WrapPanel>
+      <ProgressBar x:Name="FileProgressBar" Minimum="0" Maximum="100" Height="5" Foreground="{DynamicResource Accent}" Background="{DynamicResource Inset}" BorderThickness="0" Margin="0,9,0,10"/>
+      <TextBlock x:Name="FileStatusText" Text="完成后自动导出双语、原文、译文三份 SRT；中途取消时可手动导出已完成部分。" Foreground="{DynamicResource Accent}" FontSize="12" TextWrapping="Wrap" LineHeight="20"/>
+     </StackPanel>
+    </Border>
+    <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0" Padding="22,16">
+     <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+      <TextBlock Text="字幕预览 · 按原音轨时间排列" Style="{StaticResource Heading}"/>
+      <ListBox Grid.Row="1" x:Name="FileHistory" ItemsSource="{Binding FileSubtitles}" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+       <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/><Setter Property="Focusable" Value="False"/></Style></ListBox.ItemContainerStyle>
+       <ListBox.ItemTemplate><DataTemplate><Border Padding="0,8,0,14" BorderBrush="{DynamicResource Border}" BorderThickness="0,0,0,1"><StackPanel>
+        <TextBlock Text="{Binding Start, StringFormat=音轨 {0:F1} 秒}" Foreground="{DynamicResource Muted}" FontSize="10" Margin="0,0,0,6"/>
+        <TextBlock Text="{Binding Original}" TextWrapping="Wrap" Foreground="{DynamicResource OriginalColor}" FontSize="13" Margin="0,0,0,6"/>
+        <TextBlock Text="{Binding Translation}" TextWrapping="Wrap" Foreground="{DynamicResource TranslationColor}" FontSize="18"/>
+       </StackPanel></Border></DataTemplate></ListBox.ItemTemplate>
+      </ListBox>
+     </Grid>
+    </Border>
+   </Grid>
+
+   <Grid x:Name="RefinePage" Grid.Row="1" Visibility="Collapsed" SizeChanged="RefinePage_SizeChanged">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*" MinHeight="80"/></Grid.RowDefinitions>
+    <Border x:Name="RefineSettingsCard" MaxHeight="540" Style="{StaticResource Card}" Padding="22,18"><Grid><Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><ScrollViewer x:Name="RefineControlsScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel>
+     <TextBlock Text="结合上下文，重新翻译字幕" Style="{StaticResource Heading}"/>
+     <WrapPanel x:Name="RefineInputControls"><Button Content="导入原文 SRT…" Click="LoadRefineSrt_Click"/><Button Content="使用文件翻译原文" Click="UseFileRefine_Click"/></WrapPanel>
+     <TextBlock x:Name="RefineSourceText" Text="请选择原文轨 SRT；保留原文件，精修后另存三份字幕。" Style="{StaticResource Label}" TextWrapping="Wrap" Margin="0,5,0,10"/>
+     <Grid x:Name="RefineOptionsControls"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <StackPanel><TextBlock Text="文字翻译方式" Style="{StaticResource Label}"/><ComboBox x:Name="RefineRouteBox"><ComboBoxItem Tag="hybrid" Content="云端 · 使用已配置的 AI 接口"/><ComboBoxItem Tag="local" Content="本地 · 使用离线翻译模型"/></ComboBox></StackPanel>
+      <StackPanel Grid.Column="2"><TextBlock Text="原语言" Style="{StaticResource Label}"/><ComboBox x:Name="RefineSourceBox" SelectionChanged="RefineLanguage_Changed"/></StackPanel>
+      <StackPanel Grid.Column="4"><TextBlock Text="翻译为" Style="{StaticResource Label}"/><ComboBox x:Name="RefineTargetBox" SelectionChanged="RefineLanguage_Changed"/></StackPanel>
+     </Grid>
+     <StackPanel x:Name="TranslationPromptControls"><TextBlock Text="翻译提示词 · 同时用于实时 / 文件翻译和字幕精修" Style="{StaticResource Label}"/><TextBox x:Name="TranslationPromptBox" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="88" MaxHeight="150" VerticalScrollBarVisibility="Auto"/><WrapPanel><Button Content="保存提示词" Click="SaveTranslationPrompt_Click" Padding="12,5"/><Button Content="恢复默认提示词" Click="ResetTranslationPrompt_Click" Padding="12,5"/></WrapPanel></StackPanel>
+     <Expander x:Name="RefineBudgetControls" Header="云端切分设置 · 输入量 / 上下文 / 输出上限" Expanded="RefineBudget_Expanded" Foreground="{DynamicResource Text}" Margin="0,10,0,5"><StackPanel>
+      <StackPanel x:Name="RefineBudgetEditor"><UniformGrid x:Name="RefineBudgetInputs" Columns="3" Margin="0,8,0,0"><StackPanel Margin="0,0,10,0"><TextBlock Text="上下文预算（tokens）" Style="{StaticResource Label}"/><TextBox x:Name="RefineContextBox" MinHeight="36" TextChanged="RefineBudget_Changed"/><TextBlock Text="默认：1,019,715" Style="{StaticResource Label}"/></StackPanel><StackPanel Margin="0,0,10,0"><TextBlock Text="每批输入预算（0 = 自动）" Style="{StaticResource Label}"/><TextBox x:Name="RefineChunkBox" MinHeight="36" TextChanged="RefineBudget_Changed"/><TextBlock Text="默认：0（自动切分）" Style="{StaticResource Label}"/></StackPanel><StackPanel><TextBlock Text="单次输出上限（tokens）" Style="{StaticResource Label}"/><TextBox x:Name="RefineOutputBox" MinHeight="36" TextChanged="RefineBudget_Changed"/><TextBlock Text="默认：65,536" Style="{StaticResource Label}"/></StackPanel></UniformGrid>
+      <WrapPanel Margin="0,10,0,10"><Button x:Name="SaveRefineBudgetButton" Content="保存切分设置" Click="SaveRefineBudget_Click" Padding="12,5"/><Button x:Name="ResetRefineBudgetButton" Content="恢复默认值" Click="ResetRefineBudget_Click" Padding="12,5"/></WrapPanel></StackPanel>
+      <TextBlock x:Name="RefineBudgetHint" Style="{StaticResource Label}" TextWrapping="Wrap"/><TextBlock Text="支持的模型会再按官方上限约束；中转接口可能更低，可手动下调。token 为保守估算，超限或输出不全会缩小批次重试。修改后点击“保存切分设置”。" Style="{StaticResource Label}" TextWrapping="Wrap" Margin="0,5,0,6"/>
+     </StackPanel></Expander>
+     <TextBlock Text="云端尽量整段校对并翻译，过长时分批并携带相邻上下文；保留每条时间轴，明显识别错误可结合上下文修正，不确定处标注待核对并另存校对记录。本地合并相邻短句翻译。仅发送字幕文字。" Style="{StaticResource Label}" TextWrapping="Wrap" Margin="0,8,0,9"/>
+    </StackPanel></ScrollViewer><StackPanel Grid.Row="1" Margin="0,10,0,0">
+     <WrapPanel><Button x:Name="RefineStartButton" Content="AI 二次翻译并导出…" Click="StartRefine_Click"/><Button x:Name="RefineCancelButton" Content="取消" Click="CancelRefine_Click" IsEnabled="False"/><Button x:Name="RefineExportButton" Content="导出已处理部分…" Click="ExportRefine_Click" IsEnabled="False"/></WrapPanel>
+     <ProgressBar x:Name="RefineProgressBar" Minimum="0" Maximum="100" Height="5" Foreground="{DynamicResource Accent}" Background="{DynamicResource Inset}" BorderThickness="0" Margin="0,8,0,8"/>
+     <TextBlock x:Name="RefineStatusText" Text="开始前请先停止实时 / 文件翻译。需要先在“接口与外观”配置云端 AI。" TextWrapping="Wrap" Foreground="{DynamicResource Accent}" FontSize="12"/>
+    </StackPanel></Grid></Border>
+    <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0" Padding="22,14"><ListBox x:Name="RefineHistory" ItemsSource="{Binding RefineSubtitles}" Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+     <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch"/></Style></ListBox.ItemContainerStyle>
+     <ListBox.ItemTemplate><DataTemplate><Border BorderBrush="{DynamicResource Border}" BorderThickness="0,0,0,1" Padding="0,8,0,14"><StackPanel><TextBlock Text="{Binding Original}" TextWrapping="Wrap" Foreground="{DynamicResource OriginalColor}" FontSize="13" Margin="0,0,0,6"/><TextBlock Text="{Binding Translation}" TextWrapping="Wrap" Foreground="{DynamicResource TranslationColor}" FontSize="18"/></StackPanel></Border></DataTemplate></ListBox.ItemTemplate>
+    </ListBox></Border>
+   </Grid>
+
+   <ScrollViewer x:Name="ModelsPage" Grid.Row="1" Visibility="Collapsed" VerticalScrollBarVisibility="Auto"><StackPanel>
+    <Border Style="{StaticResource Card}"><StackPanel x:Name="ModelLocationControls"><TextBlock Text="模型保存位置" Style="{StaticResource Heading}"/><TextBox x:Name="ModelDirectoryBox" IsReadOnly="True" ToolTip="模型和本地引擎的保存目录"/><WrapPanel><Button Content="选择文件夹…" Click="ChooseModelDirectory_Click"/><Button Content="恢复默认位置" Click="ResetModelDirectory_Click"/><Button Content="打开文件夹" Click="OpenModelDirectory_Click"/></WrapPanel><TextBlock Text="优先保存到程序旁的 models；程序在系统盘时优先其他固定磁盘。更改后会校验并复用新目录中的同名模型，旧文件保留。" Style="{StaticResource Label}" Margin="0,13,0,0" LineHeight="20"/></StackPanel></Border>
+    <Border Style="{StaticResource Card}"><StackPanel><Grid><TextBlock Text="设备体检" Style="{StaticResource Heading}"/><Button Content="重新检测" Click="Detect_Click" HorizontalAlignment="Right" Padding="12,7"/></Grid><TextBlock x:Name="DeviceText" Foreground="{DynamicResource Muted}" LineHeight="23"/><Border Background="{DynamicResource Inset}" CornerRadius="9" Padding="15" Margin="0,16,0,12"><StackPanel><TextBlock x:Name="RecommendationText" Foreground="{DynamicResource Accent}" FontSize="16" FontWeight="SemiBold"/><TextBlock x:Name="RecommendationReason" Foreground="{DynamicResource Muted}" Margin="0,8,0,0" LineHeight="22"/></StackPanel></Border><Button Content="应用推荐方案" Click="ApplyRecommendation_Click" HorizontalAlignment="Left"/><TextBlock Text="设备推荐是初步估计。自动检测兼容 NVIDIA 显卡；驱动、显存不足或启动失败时回退 CPU。" Style="{StaticResource Label}" Margin="0,12,0,0"/></StackPanel></Border>
+    <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="本地模型与组件" Style="{StaticResource Heading}"/><TextBlock Text="推理设备" Style="{StaticResource Label}"/><ComboBox x:Name="AccelerationBox" SelectionChanged="Model_Changed"><ComboBoxItem Content="自动（兼容时优先显卡）" Tag="auto"/><ComboBoxItem Content="仅使用 CPU" Tag="cpu"/></ComboBox><TextBlock x:Name="AccelerationHint" TextWrapping="Wrap" Foreground="{DynamicResource Muted}" FontSize="12" LineHeight="21" Margin="0,0,0,15"/><Grid x:Name="ModelChoices"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="18"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="语音识别模型" Style="{StaticResource Label}"/><ComboBox x:Name="WhisperModelBox" SelectionChanged="Model_Changed"><ComboBoxItem Content="Tiny · 78 MB · 速度优先" Tag="tiny"/><ComboBoxItem Content="Base · 148 MB · 均衡" Tag="base"/><ComboBoxItem Content="Small · 488 MB · 识别质量优先" Tag="small"/></ComboBox></StackPanel><StackPanel Grid.Column="2"><TextBlock Text="离线翻译模型" Style="{StaticResource Label}"/><ComboBox x:Name="TranslationModelBox" SelectionChanged="Model_Changed"/></StackPanel></Grid><TextBlock Text="模型下载源" Style="{StaticResource Label}"/><ComboBox x:Name="DownloadHostBox"><ComboBoxItem Content="Hugging Face 官方" Tag="https://huggingface.co"/><ComboBoxItem Content="HF Mirror 镜像（仍校验官方 SHA-256）" Tag="https://hf-mirror.com"/></ComboBox><TextBlock x:Name="DownloadPlanText" Foreground="{DynamicResource Muted}" LineHeight="22"/><ProgressBar x:Name="DownloadProgress" Height="6" Minimum="0" Maximum="1" Background="{DynamicResource Inset}" Foreground="{DynamicResource Accent}" BorderThickness="0" Margin="0,17,0,10"/><TextBlock Text="HF Mirror 仅加速模型；CPU / GPU 引擎组件仍从 GitHub 官方源下载。" TextWrapping="Wrap" Style="{StaticResource Label}" Margin="0,12,0,0"/><TextBlock x:Name="DownloadStatus" TextWrapping="Wrap" LineHeight="21" Text="按当前文字翻译方式下载；已有文件会校验后复用。" Style="{StaticResource Label}"/><WrapPanel Margin="0,17,0,0"><Button x:Name="PrepareButton" Content="下载 / 校验所需组件" Click="Prepare_Click"/><Button x:Name="CancelPrepareButton" Content="取消下载" Click="CancelPrepare_Click" IsEnabled="False"/><Button x:Name="BenchmarkButton" Content="实测本地速度" Click="Benchmark_Click"/></WrapPanel><TextBlock x:Name="BenchmarkResult" Text="实测使用随软件附带的公开英文短音频，只作速度参考；中日韩识别质量需结合实际内容判断。" Style="{StaticResource Label}" Margin="0,15,0,0" LineHeight="21"/></StackPanel></Border>
+   </StackPanel></ScrollViewer>
+
+   <ScrollViewer x:Name="SettingsPage" Grid.Row="1" Visibility="Collapsed" VerticalScrollBarVisibility="Auto"><StackPanel>
+    <Border Style="{StaticResource Card}"><StackPanel x:Name="ApiControls">
+     <TextBlock Text="文字翻译服务 · OpenAI 兼容" Style="{StaticResource Heading}"/>
+     <TextBlock Text="语音始终由本地 Whisper 识别。选择云端文字翻译时，只发送识别文字及必要上下文。" Style="{StaticResource Label}" Margin="0,0,0,16"/>
+     <TextBlock Text="基础地址（通常含 /v1）" Style="{StaticResource Label}"/><TextBox x:Name="TranslationUrlBox"/>
+     <TextBlock Text="模型名称" Style="{StaticResource Label}"/><TextBox x:Name="TranslationApiModelBox"/>
+     <TextBlock Text="API Key（当前 Windows 用户加密保存）" Style="{StaticResource Label}"/><PasswordBox x:Name="TranslationKeyBox"/>
+     <Button Content="测试文字翻译接口" Click="TestTranslation_Click" HorizontalAlignment="Left"/>
+     <CheckBox x:Name="StreamTranslationBox" Content="实时显示原文与译文（译文逐步补全，可关闭）" Margin="0,16,0,0"/>
+     <TextBlock Text="仅需提供 chat/completions，可使用 DeepSeek 或其他兼容模型。本地翻译无需填写这些接口。" Style="{StaticResource Label}" Margin="0,12,0,0"/>
+     <TextBlock x:Name="ApiTestResult" Foreground="{DynamicResource Accent}" Margin="0,15,0,0"/>
+    </StackPanel></Border>
+    <Border x:Name="ColorSettingsCard" Style="{StaticResource Card}"><StackPanel>
+     <TextBlock Text="界面与字幕颜色" Style="{StaticResource Heading}"/>
+     <TextBlock Text="点击色块选择颜色，立即应用并保存；原文与译文颜色同时用于主窗口和悬浮字幕。" Style="{StaticResource Label}" Margin="0,0,0,15"/>
+     <WrapPanel><Button x:Name="ColorBackgroundButton" Tag="Background" Click="ChooseColor_Click" Content="界面背景" Margin="0,0,9,10"/><Button x:Name="ColorPanelButton" Tag="Panel" Click="ChooseColor_Click" Content="卡片背景" Margin="0,0,9,10"/><Button x:Name="ColorTextButton" Tag="Text" Click="ChooseColor_Click" Content="界面文字" Margin="0,0,9,10"/><Button x:Name="ColorAccentButton" Tag="Accent" Click="ChooseColor_Click" Content="强调色" Margin="0,0,9,10"/></WrapPanel>
+     <WrapPanel><Button x:Name="ColorSubtitleBackgroundButton" Tag="SubtitleBackground" Click="ChooseColor_Click" Content="字幕背景" Margin="0,0,9,10"/><Button x:Name="ColorOriginalButton" Tag="Original" Click="ChooseColor_Click" Content="原文颜色" Margin="0,0,9,10"/><Button x:Name="ColorTranslationButton" Tag="Translation" Click="ChooseColor_Click" Content="译文颜色" Margin="0,0,9,10"/></WrapPanel>
+     <WrapPanel Margin="0,5,0,0"><Button Content="深色预设 / 恢复默认" Tag="dark" Click="ColorPreset_Click"/><Button Content="浅色预设" Tag="light" Click="ColorPreset_Click"/></WrapPanel>
+    </StackPanel></Border>
+    <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="字幕外观" Style="{StaticResource Heading}"/><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="24"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="译文字号 · 18–54" Style="{StaticResource Label}"/><Slider x:Name="FontSlider" Minimum="18" Maximum="54" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,14,0,14" ValueChanged="Appearance_Changed"/></StackPanel><StackPanel Grid.Column="2"><TextBlock Text="背景不透明度" Style="{StaticResource Label}"/><Slider x:Name="OpacitySlider" Minimum="0.2" Maximum="1" Margin="0,14,0,14" ValueChanged="Appearance_Changed"/></StackPanel></Grid><TextBlock Text="悬浮字幕保留最近几句" Style="{StaticResource Label}"/><ComboBox x:Name="OverlayLinesBox" SelectionChanged="CaptionLines_Changed"><ComboBoxItem Tag="1" Content="1 句 · 单句显示"/><ComboBoxItem Tag="2" Content="2 句"/><ComboBoxItem Tag="3" Content="3 句 · 默认"/><ComboBoxItem Tag="4" Content="4 句"/><ComboBoxItem Tag="6" Content="6 句"/></ComboBox><TextBlock Text="悬浮窗解锁后，可拖动任意边框或右下角调整宽高；大小和位置会保存。" TextWrapping="Wrap" Style="{StaticResource Label}" Margin="0,4,0,12"/><WrapPanel><CheckBox x:Name="OriginalBox" Content="显示原文" Click="Appearance_Click"/><CheckBox x:Name="TypewriterBox" Content="打字机动画" Click="Appearance_Click"/></WrapPanel><Border x:Name="AppearanceSurface" CornerRadius="13" Background="{DynamicResource Input}" BorderBrush="{DynamicResource Border}" BorderThickness="1" Padding="22" Margin="0,12,0,15"><StackPanel><TextBlock Text="字幕样式预览 · 示例内容" Foreground="{DynamicResource Muted}" FontSize="10" Margin="0,0,0,14"/><TextBlock x:Name="AppearanceOriginal" Text="A new way to understand the world." Foreground="{DynamicResource Muted}" FontSize="14"/><TextBlock x:Name="AppearancePreview" Text="换一种语言，听见更大的世界。" Foreground="{DynamicResource TranslationColor}" FontSize="28" Margin="0,9,0,0"/></StackPanel></Border><Button Content="预览悬浮字幕" Click="PreviewOverlay_Click" HorizontalAlignment="Left"/></StackPanel></Border>
+    <Border x:Name="ExportSettingsCard" Style="{StaticResource Card}"><StackPanel>
+     <TextBlock Text="完整字幕导出" Style="{StaticResource Heading}"/>
+     <CheckBox x:Name="ExportOnStopBox" Content="停止后自动导出双语、原文、译文三份 SRT" Click="ExportSettings_Click"/>
+     <TextBox x:Name="ExportDirectoryBox" IsReadOnly="True"/>
+     <WrapPanel><Button Content="选择导出文件夹…" Click="ChooseExportDirectory_Click"/><Button Content="打开导出文件夹" Click="OpenExportDirectory_Click"/></WrapPanel>
+     <TextBlock Text="正常停止会先完成已接收片段，再导出完整会话；界面只显示最近 500 条，导出保留全部记录。等待中可重试失败片段，立即结束则明确标记未完成内容。" Style="{StaticResource Label}" Margin="0,15,0,0"/>
+     <TextBlock x:Name="ExportStatusText" Foreground="{DynamicResource Accent}" Margin="0,12,0,0"/>
+    </StackPanel></Border>
+    <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="字幕锁定与解锁快捷键" Style="{StaticResource Heading}"/><CheckBox x:Name="HotkeyEnabledBox" Content="启用全局快捷键"/><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="18"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="修饰键" Style="{StaticResource Label}"/><ComboBox x:Name="HotkeyModifiersBox" IsEnabled="{Binding IsChecked, ElementName=HotkeyEnabledBox}"><ComboBoxItem Content="Ctrl + Alt + Shift" Tag="7"/><ComboBoxItem Content="Ctrl + Shift" Tag="6"/><ComboBoxItem Content="Alt + Shift" Tag="5"/><ComboBoxItem Content="Ctrl + Alt" Tag="3"/><ComboBoxItem Content="Ctrl" Tag="2"/><ComboBoxItem Content="Alt" Tag="1"/></ComboBox></StackPanel><StackPanel Grid.Column="2"><TextBlock Text="按键" Style="{StaticResource Label}"/><ComboBox x:Name="HotkeyKeyBox" IsEnabled="{Binding IsChecked, ElementName=HotkeyEnabledBox}"/></StackPanel></Grid><WrapPanel><Button Content="应用快捷键" Click="ApplyHotkey_Click" Background="{DynamicResource Selected}"/><Button Content="立即解锁字幕" Click="UnlockOverlay_Click"/></WrapPanel><TextBlock x:Name="HotkeyStatusText" Foreground="{DynamicResource Accent}" Margin="0,15,0,0" LineHeight="21"/><TextBlock Text="选择组合后点击应用，立即生效。冲突时保留原组合；关闭快捷键后仍可从托盘解锁。" Style="{StaticResource Label}" Margin="0,10,0,0" LineHeight="20"/></StackPanel></Border>
+    <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="语音活动阈值" Style="{StaticResource Heading}"/><TextBlock Text="声音偏小时调低；背景音乐触发较多时调高。音乐与人声混合的识别效果由模型决定。" Style="{StaticResource Label}"/><Slider x:Name="ThresholdSlider" Minimum="0.002" Maximum="0.03" Margin="0,14,0,0"/><Button Content="保存设置" Click="Save_Click" HorizontalAlignment="Left" Margin="0,20,0,0"/></StackPanel></Border>
+   </StackPanel></ScrollViewer>
+
+   <Border Grid.Row="2" BorderBrush="{DynamicResource Border}" BorderThickness="0,1,0,0" Padding="0,17,0,0" Margin="0,20,0,0"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" TextWrapping="Wrap" Text="首次使用：请先查看设备推荐，并按所选方案准备模型或填写 API。" Foreground="{DynamicResource Muted}" FontSize="12" VerticalAlignment="Center" Margin="0,0,16,0"/><StackPanel x:Name="LiveActionButtons" Grid.Column="1" Orientation="Horizontal"><Button x:Name="StartButton" Content="▶  开始翻译" Background="{DynamicResource Accent}" Foreground="{DynamicResource OnAccent}" FontWeight="SemiBold" Click="Start_Click"/><Button x:Name="PauseButton" Content="暂停收音" Click="Pause_Click" IsEnabled="False"/><Button x:Name="StopButton" Content="停止并完成" Click="Stop_Click" IsEnabled="False" Margin="0"/></StackPanel></Grid></Border>
+  </Grid>
+ </Grid>
+</Window>
+
+
+
+
+
